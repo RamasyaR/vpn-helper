@@ -1,4 +1,6 @@
 # VPN-HELPER
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FRamasyaR%2Fvpn-helper.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FRamasyaR%2Fvpn-helper?ref=badge_shield)
+
 
 A small container that will help you access services located on remote
 VPN clients. The main idea of this repository is to forward ports from
@@ -49,3 +51,7 @@ servers (such as NGINX Reverse Proxy, Caddy, etc.).
     8082:192.168.255.2:8081
     8083:192.168.255.2:8082
   ```
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FRamasyaR%2Fvpn-helper.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2FRamasyaR%2Fvpn-helper?ref=badge_large)
