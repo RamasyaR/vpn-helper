@@ -1,0 +1,24 @@
+services:
+  vpn-helper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vpn-helper
+    restart: unless-stopped
+    environment:
+      - VPN_HELPER_VPN_DOCKER_NETWORK_NAME=openvpn.vpn_net
+      - VPN_HELPER_VPN_SERVER_NETWORK=192.168.255.0/24
+      - VPN_HELPER_FORWARDING_RULES=
+        8082:192.168.255.2:8081
+        8083:192.168.255.2:8082
+    cap_add:
+     - NET_ADMIN
+    networks:
+      - vpn_net
+      - proxy_net
+
+networks:
+  vpn_net:
+    external: true
+  proxy_net:
+    external: true

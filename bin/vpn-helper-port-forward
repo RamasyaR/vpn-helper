@@ -1,0 +1,21 @@
+#!/bin/bash
+
+FAKE_PORT=$1
+SRV_IP=$2
+SRV_PORT=$3
+
+if [[ ! "${SRV_IP}" =~ ^(([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))\.){3}([1-9]?[0-9]|1[0-9][0-9]|2([0-4][0-9]|5[0-5]))$ ]]; then
+  echo "Forward port failed, invalid ip address: ${SRV_IP}"
+  exit 1
+fi
+if [[ "${SRV_PORT}" -le 1 && "${SRV_PORT}" -ge 65535 ]]; then
+  echo "Forward port failed, invalid src port: ${SRV_PORT}"
+  exit 2
+fi
+if [[ "${FAKE_PORT}" -le 1 && "${FAKE_PORT}" -ge 65535 ]]; then
+  echo "Forward port failed, invalid dst port: ${FAKE_PORT}"
+  exit 3
+fi
+
+iptables -t nat -A PREROUTING -p tcp --dport "${FAKE_PORT}" -j DNAT --to-destination "${SRV_IP}":"${SRV_PORT}"
+iptables -A FORWARD -p tcp -d "${SRV_IP}" --dport "${SRV_PORT}" -j ACCEPT

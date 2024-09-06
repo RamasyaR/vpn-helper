@@ -1,0 +1,38 @@
+#!/bin/bash
+
+set -e
+
+IFS=" " read -r -a FORWARDING_RULES <<< "${VPN_HELPER_FORWARDING_RULES}"
+if (( ! "${#FORWARDING_RULES[@]}" )); then
+  echo "Empty forwarding rules array, please check your VPN_HELPER_FORWARDING_RULES env variable!!!"
+  exit 1
+fi
+
+CONTAINER_IP="$(getent ahostsv4 "${VPN_HELPER_VPN_DOCKER_NETWORK_NAME}" \
+                | grep STREAM \
+                | head -n 1 \
+                | awk '{print $1}')"
+if [ -z "${CONTAINER_IP}" ]; then
+  echo "Gateway IP address not found, please check your VPN network name!!!"
+  exit 2
+fi
+
+echo "Gateway IP address for accessing the VPN network: ${CONTAINER_IP}"
+
+echo "Checking VPN server network CIDR entry..."
+ipcalc -n "${VPN_HELPER_VPN_SERVER_NETWORK}" > /dev/null
+echo "CIDR entry is valid: ${VPN_HELPER_VPN_SERVER_NETWORK}"
+
+echo "Adding a route to an VPN tunnel network: ${VPN_HELPER_VPN_SERVER_NETWORK} via ${CONTAINER_IP}"
+ip route add "${VPN_HELPER_VPN_SERVER_NETWORK}" via "${CONTAINER_IP}"
+
+echo "Enabling nat masquerade"
+iptables -t nat -A POSTROUTING -j MASQUERADE
+
+for i in "${FORWARDING_RULES[@]}"; do
+  IFS=":" read -r DST_PORT SRC_ADDRESS SRC_PORT <<< "$i"
+  vpn-helper-port-forward "${DST_PORT}" "${SRC_ADDRESS}" "${SRC_PORT}"
+  echo "Port forwarded successfully: ${DST_PORT} -> ${SRC_ADDRESS}:${SRC_PORT}"
+done
+
+sleep infinity
